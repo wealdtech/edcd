@@ -13,12 +13,38 @@
 
 package ens
 
-import "context"
+import (
+	"context"
+
+	"github.com/ethereum/go-ethereum/common"
+)
 
 // Service defines the ENS service.
 type Service interface {
-	// GetClaimData gets the claim data for a domain.
-	GetClaimData(ctx context.Context,
+	// SignatureHash obtains the signature hash for a domain from its parent.
+	SignatureHash(ctx context.Context,
+		name string,
 		domain string,
-	) ([]byte, string, []byte, []byte, error)
+		owner common.Address,
+	) (
+		[]byte,
+		error,
+	)
+
+	//// DomainOwner gets the owner for a domain.
+	//DomainOwner(ctx context.Context,
+	//domain string,
+	//)(
+	//
+	//)
+	//	// GetClaimData gets the claim data for a domain.
+	//	GetClaimData(ctx context.Context,
+	//		domain string,
+	//	) (
+	//		nameHash [32]byte,
+	//		label string,
+	//		owner common.Address,
+	//		signature []byte,
+	//		err error,
+	//	)
 }

@@ -25,14 +25,14 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	zerologger "github.com/rs/zerolog/log"
+	"github.com/wealdtech/edcd/services/claimdata"
 	"github.com/wealdtech/edcd/services/daemon/jsonrpc/codecs/mapping"
-	"github.com/wealdtech/edcd/services/ens"
 )
 
 // Service is the JSON-RPC daemon service.
 type Service struct {
-	srv *http.Server
-	ens ens.Service
+	srv       *http.Server
+	claimData claimdata.Service
 }
 
 // module-wide log.
@@ -61,7 +61,7 @@ func New(ctx context.Context, params ...Parameter) (*Service, error) {
 	rpcServer.RegisterCodec(mappingCodec, "application/json")
 
 	s := &Service{
-		ens: parameters.ens,
+		claimData: parameters.claimData,
 	}
 
 	if err := rpcServer.RegisterService(s, "ENSService"); err != nil {
@@ -90,6 +90,7 @@ func New(ctx context.Context, params ...Parameter) (*Service, error) {
 	}()
 
 	go func() {
+		log.Trace().Str("listen_address", parameters.listenAddress).Msg("Starting daemon")
 		if err := s.srv.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatal().Err(err).Msg("Server shut down unexpectedly")
 		}

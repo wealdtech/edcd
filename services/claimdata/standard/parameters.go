@@ -18,15 +18,17 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/wealdtech/edcd/services/ens"
 	"github.com/wealdtech/edcd/services/metrics"
 	nullmetrics "github.com/wealdtech/edcd/services/metrics/null"
 )
 
 type parameters struct {
-	logLevel      zerolog.Level
-	monitor       metrics.Service
-	timeout       time.Duration
-	connectionURL string
+	logLevel       zerolog.Level
+	monitor        metrics.Service
+	timeout        time.Duration
+	domainControls map[string]interface{}
+	ens            ens.Service
 }
 
 // Parameter is the interface for service parameters.
@@ -61,10 +63,17 @@ func WithTimeout(timeout time.Duration) Parameter {
 	})
 }
 
-// WithConnectionURL sets the Ethereum 1 connection URL service for this module.
-func WithConnectionURL(url string) Parameter {
+// WithDomainControls sets the domain controls for this module.
+func WithDomainControls(controls map[string]interface{}) Parameter {
 	return parameterFunc(func(p *parameters) {
-		p.connectionURL = url
+		p.domainControls = controls
+	})
+}
+
+// WithENS sets the ENS service for this module.
+func WithENS(ens ens.Service) Parameter {
+	return parameterFunc(func(p *parameters) {
+		p.ens = ens
 	})
 }
 
@@ -87,8 +96,11 @@ func parseAndCheckParameters(params ...Parameter) (*parameters, error) {
 	if parameters.monitor == nil {
 		return nil, errors.New("no monitor specified")
 	}
-	if parameters.connectionURL == "" {
-		return nil, errors.New("no connection URL specified")
+	if parameters.domainControls == nil {
+		return nil, errors.New("no domain controls specified")
+	}
+	if parameters.ens == nil {
+		return nil, errors.New("no ENS service specified")
 	}
 
 	return &parameters, nil

@@ -24,8 +24,9 @@ import (
 
 // domainControl contains information about control of a domain.
 type domainControl struct {
-	OwnerAddress common.Address
-	Passphrase   string
+	Domain     string
+	Owner      common.Address
+	Passphrase string
 }
 
 func parseDomainControls(dcs map[string]interface{}) (map[string]*domainControl, error) {
@@ -56,8 +57,9 @@ func parseDomainControls(dcs map[string]interface{}) (map[string]*domainControl,
 		}
 
 		domainControls[domain] = &domainControl{
-			OwnerAddress: address,
-			Passphrase:   passphrase,
+			Domain:     domain,
+			Owner:      address,
+			Passphrase: passphrase,
 		}
 	}
 

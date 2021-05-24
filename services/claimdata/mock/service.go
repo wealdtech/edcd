@@ -11,23 +11,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package standard
+package mock
 
 import (
 	"context"
+	"errors"
 
-	"github.com/pkg/errors"
+	"github.com/ethereum/go-ethereum/common"
 )
+
+// Service is a mock claim data service.
+type Service struct{}
+
+// New creates a new claim data service.
+func New() *Service {
+	return &Service{}
+}
 
 // GetClaimData gets the claim data for a domain.
 func (s *Service) GetClaimData(ctx context.Context,
 	domain string,
-) (
-	[]byte,
-	string,
-	[]byte,
-	[]byte,
-	error,
-) {
-	return nil, "", nil, nil, errors.New("not implemented")
+) ([32]byte, string, common.Address, []byte, error) {
+	return [32]byte{}, "", common.Address{}, nil, errors.New("mock")
 }

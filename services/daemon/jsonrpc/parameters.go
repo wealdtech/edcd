@@ -17,7 +17,7 @@ import (
 	"errors"
 
 	"github.com/rs/zerolog"
-	"github.com/wealdtech/edcd/services/ens"
+	"github.com/wealdtech/edcd/services/claimdata"
 	"github.com/wealdtech/edcd/services/metrics"
 	nullmetrics "github.com/wealdtech/edcd/services/metrics/null"
 )
@@ -26,7 +26,7 @@ type parameters struct {
 	logLevel      zerolog.Level
 	monitor       metrics.Service
 	listenAddress string
-	ens           ens.Service
+	claimData     claimdata.Service
 }
 
 // Parameter is the interface for service parameters.
@@ -61,10 +61,10 @@ func WithListenAddress(listenAddress string) Parameter {
 	})
 }
 
-// WithENS sets the ENS service for this module.
-func WithENS(ens ens.Service) Parameter {
+// WithClaimData sets the claim data service for this module.
+func WithClaimData(claimData claimdata.Service) Parameter {
 	return parameterFunc(func(p *parameters) {
-		p.ens = ens
+		p.claimData = claimData
 	})
 }
 
@@ -86,8 +86,8 @@ func parseAndCheckParameters(params ...Parameter) (*parameters, error) {
 	if parameters.listenAddress == "" {
 		return nil, errors.New("no listen address specified")
 	}
-	if parameters.ens == nil {
-		return nil, errors.New("no ENS service specified")
+	if parameters.claimData == nil {
+		return nil, errors.New("no claim data service specified")
 	}
 
 	return &parameters, nil

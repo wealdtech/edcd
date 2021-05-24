@@ -20,7 +20,8 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
-	"github.com/wealdtech/edcd/services/ens/standard"
+	"github.com/wealdtech/edcd/services/claimdata/standard"
+	mockens "github.com/wealdtech/edcd/services/ens/mock"
 	nullmetrics "github.com/wealdtech/edcd/services/metrics/null"
 )
 
@@ -28,6 +29,13 @@ func TestService(t *testing.T) {
 	ctx := context.Background()
 
 	monitor := nullmetrics.New()
+	domainControls := map[string]interface{}{
+		"wealdtech.eth": map[string]interface{}{
+			"owner-address": "0x388Ea662EF2c223eC0B047D41Bf3c0f362142ad5",
+			"passphrase":    "a secret",
+		},
+	}
+	ens := mockens.New()
 
 	tests := []struct {
 		name   string
@@ -40,7 +48,8 @@ func TestService(t *testing.T) {
 				standard.WithLogLevel(zerolog.Disabled),
 				standard.WithMonitor(nil),
 				standard.WithTimeout(10 * time.Second),
-				standard.WithConnectionURL("http://localhost:8545/"),
+				standard.WithDomainControls(domainControls),
+				standard.WithENS(ens),
 			},
 			err: "problem with parameters: no monitor specified",
 		},
@@ -50,28 +59,43 @@ func TestService(t *testing.T) {
 				standard.WithLogLevel(zerolog.Disabled),
 				standard.WithMonitor(monitor),
 				standard.WithTimeout(0),
-				standard.WithConnectionURL("http://localhost:8545/"),
+				standard.WithDomainControls(domainControls),
+				standard.WithENS(ens),
 			},
 			err: "problem with parameters: no timeout specified",
 		},
 		{
-			name: "ConnectionURLMissing",
+			name: "DomainControlsMissing",
 			params: []standard.Parameter{
 				standard.WithLogLevel(zerolog.Disabled),
 				standard.WithMonitor(monitor),
 				standard.WithTimeout(10 * time.Second),
+				standard.WithENS(ens),
 			},
-			err: "problem with parameters: no connection URL specified",
+			err: "problem with parameters: no domain controls specified",
 		},
 		{
-			name: "ConnectionURLBad",
+			name: "DomainControlsBad",
 			params: []standard.Parameter{
 				standard.WithLogLevel(zerolog.Disabled),
 				standard.WithMonitor(monitor),
 				standard.WithTimeout(10 * time.Second),
-				standard.WithConnectionURL("\a\b"),
+				standard.WithDomainControls(map[string]interface{}{
+					"wealdtech.eth": "bad",
+				}),
+				standard.WithENS(ens),
 			},
-			err: "invalid URL: parse \"http://\\a\\b\": net/url: invalid control character in URL",
+			err: "invalid domain controls: invalid configuration for wealdtech.eth",
+		},
+		{
+			name: "ENSMissing",
+			params: []standard.Parameter{
+				standard.WithLogLevel(zerolog.Disabled),
+				standard.WithMonitor(monitor),
+				standard.WithTimeout(10 * time.Second),
+				standard.WithDomainControls(domainControls),
+			},
+			err: "problem with parameters: no ENS service specified",
 		},
 		{
 			name: "Good",
@@ -79,7 +103,8 @@ func TestService(t *testing.T) {
 				standard.WithLogLevel(zerolog.Disabled),
 				standard.WithMonitor(monitor),
 				standard.WithTimeout(10 * time.Second),
-				standard.WithConnectionURL("localhost:8545/"),
+				standard.WithDomainControls(domainControls),
+				standard.WithENS(ens),
 			},
 		},
 	}

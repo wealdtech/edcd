@@ -19,15 +19,15 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
+	mockclaimdata "github.com/wealdtech/edcd/services/claimdata/mock"
 	"github.com/wealdtech/edcd/services/daemon/jsonrpc"
-	mockens "github.com/wealdtech/edcd/services/ens/mock"
 	nullmetrics "github.com/wealdtech/edcd/services/metrics/null"
 )
 
 func TestService(t *testing.T) {
 	ctx := context.Background()
 
-	ens := mockens.New()
+	claimData := mockclaimdata.New()
 	monitor := nullmetrics.New()
 
 	tests := []struct {
@@ -41,7 +41,7 @@ func TestService(t *testing.T) {
 				jsonrpc.WithLogLevel(zerolog.Disabled),
 				jsonrpc.WithMonitor(nil),
 				jsonrpc.WithListenAddress(":14732"),
-				jsonrpc.WithENS(ens),
+				jsonrpc.WithClaimData(claimData),
 			},
 			err: "problem with parameters: no monitor specified",
 		},
@@ -50,7 +50,7 @@ func TestService(t *testing.T) {
 			params: []jsonrpc.Parameter{
 				jsonrpc.WithLogLevel(zerolog.Disabled),
 				jsonrpc.WithMonitor(monitor),
-				jsonrpc.WithENS(ens),
+				jsonrpc.WithClaimData(claimData),
 			},
 			err: "problem with parameters: no listen address specified",
 		},
@@ -61,7 +61,7 @@ func TestService(t *testing.T) {
 				jsonrpc.WithMonitor(monitor),
 				jsonrpc.WithListenAddress(":14732"),
 			},
-			err: "problem with parameters: no ENS service specified",
+			err: "problem with parameters: no claim data service specified",
 		},
 		{
 			name: "Good",
@@ -69,7 +69,7 @@ func TestService(t *testing.T) {
 				jsonrpc.WithLogLevel(zerolog.Disabled),
 				jsonrpc.WithMonitor(monitor),
 				jsonrpc.WithListenAddress(":14732"),
-				jsonrpc.WithENS(ens),
+				jsonrpc.WithClaimData(claimData),
 			},
 		},
 	}

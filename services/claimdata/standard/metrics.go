@@ -43,9 +43,9 @@ func registerMetrics(ctx context.Context, monitor metrics.Service) error {
 func registerPrometheusMetrics(ctx context.Context) error {
 	requests = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsNamespace,
-		Subsystem: "ens",
+		Subsystem: "claimdata",
 		Name:      "requests_total",
-		Help:      "Requests for ENS data",
+		Help:      "Requests for claim data",
 	},
 		[]string{"result"},
 	)

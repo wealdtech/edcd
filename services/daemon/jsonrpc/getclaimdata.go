@@ -26,24 +26,33 @@ type GetClaimDataArgs struct {
 
 // GetClaimDataArgs are the results for the GetClaimData method.
 type GetClaimDataResults struct {
-	Message   string
-	Node      string
-	Label     string
-	NewOwner  string
-	Signature string
+	Message   string `json:"message,omitempty"`
+	Node      string `json:"node,omitempty"`
+	Label     string `json:"label,omitempty"`
+	NewOwner  string `json:"newowner,omitempty"`
+	Signature string `json:"siganture,omitempty"`
 }
 
 func (s *Service) GetClaimData(r *http.Request, args *GetClaimDataArgs, results *GetClaimDataResults) error {
 	ctx := context.Background()
-	node, label, newOwner, signature, err := s.ens.GetClaimData(ctx, args.Domain)
+	log.Trace().Str("domain", args.Domain).Msg("GetClaimData called")
+	node, label, newOwner, signature, err := s.claimData.GetClaimData(ctx, args.Domain)
 	if err != nil {
-		results.Message = err.Error()
-	} else {
-		results.Message = "Success"
-		results.Node = fmt.Sprintf("%#x", node)
-		results.Label = label
-		results.NewOwner = fmt.Sprintf("%#x", newOwner)
-		results.Signature = fmt.Sprintf("%#x", signature)
+		log.Trace().Err(err).Msg("GetClaimData failed")
+		return err
 	}
+
+	results.Message = "Success"
+	results.Node = fmt.Sprintf("%#x", node)
+	results.Label = label
+	results.NewOwner = fmt.Sprintf("%#x", newOwner)
+	results.Signature = fmt.Sprintf("%#x", signature)
+	log.Trace().
+		Str("nodehash", results.Node).
+		Str("label", results.Label).
+		Str("new_owner", results.NewOwner).
+		Str("signature", results.Signature).
+		Msg("GetClaimData succeeded")
+
 	return nil
 }

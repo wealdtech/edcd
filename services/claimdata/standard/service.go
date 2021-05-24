@@ -15,20 +15,19 @@ package standard
 
 import (
 	"context"
-	"fmt"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	zerologger "github.com/rs/zerolog/log"
+	"github.com/wealdtech/edcd/services/ens"
 )
 
 // Service is the ENS service.
 type Service struct {
-	base    *url.URL
-	timeout time.Duration
+	timeout        time.Duration
+	domainControls map[string]*domainControl
+	ens            ens.Service
 }
 
 // module-wide log.
@@ -42,7 +41,7 @@ func New(ctx context.Context, params ...Parameter) (*Service, error) {
 	}
 
 	// Set logging.
-	log = zerologger.With().Str("service", "ens").Str("impl", "standard").Logger()
+	log = zerologger.With().Str("service", "claimdata").Str("impl", "standard").Logger()
 	if parameters.logLevel != log.GetLevel() {
 		log = log.Level(parameters.logLevel)
 	}
@@ -51,19 +50,16 @@ func New(ctx context.Context, params ...Parameter) (*Service, error) {
 		return nil, errors.New("failed to register metrics")
 	}
 
-	// Connect to Ethereum 1.
-	connectionURL := parameters.connectionURL
-	if !strings.HasPrefix(connectionURL, "http") {
-		connectionURL = fmt.Sprintf("http://%s", parameters.connectionURL)
-	}
-	base, err := url.Parse(connectionURL)
+	// Parse domain controls
+	domainControls, err := parseDomainControls(parameters.domainControls)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid URL")
+		return nil, errors.Wrap(err, "invalid domain controls")
 	}
 
 	s := &Service{
-		base:    base,
-		timeout: parameters.timeout,
+		timeout:        parameters.timeout,
+		domainControls: domainControls,
+		ens:            parameters.ens,
 	}
 
 	return s, nil

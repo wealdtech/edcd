@@ -17,7 +17,9 @@ import (
 	zerologger "github.com/rs/zerolog/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	standardclaimdata "github.com/wealdtech/edcd/services/claimdata/standard"
 	jsonrpcdaemon "github.com/wealdtech/edcd/services/daemon/jsonrpc"
+	mockens "github.com/wealdtech/edcd/services/ens/mock"
 	standardens "github.com/wealdtech/edcd/services/ens/standard"
 	"github.com/wealdtech/edcd/services/metrics"
 	nullmetrics "github.com/wealdtech/edcd/services/metrics/null"
@@ -176,19 +178,31 @@ func startServices(ctx context.Context, monitor metrics.Service) error {
 	ens, err := standardens.New(ctx,
 		standardens.WithLogLevel(util.LogLevel("ens")),
 		standardens.WithMonitor(monitor),
-		standardens.WithTimeout(viper.GetDuration("ens.timeout")),
+		standardens.WithTimeout(viper.GetDuration("claimdata.timeout")),
 		standardens.WithConnectionURL(viper.GetString("eth1client.address")),
-		standardens.WithDomainControls(viper.GetStringMap("ens.domain-controls")),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to start ENS service")
+	}
+	fmt.Printf("Not using ENS %v\n", ens)
+
+	log.Trace().Msg("Starting claim data service")
+	claimData, err := standardclaimdata.New(ctx,
+		standardclaimdata.WithLogLevel(util.LogLevel("claimdata")),
+		standardclaimdata.WithMonitor(monitor),
+		standardclaimdata.WithTimeout(viper.GetDuration("claimdata.timeout")),
+		standardclaimdata.WithDomainControls(viper.GetStringMap("claimdata.domain-controls")),
+		standardclaimdata.WithENS(mockens.New()),
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to start claim data service")
 	}
 
 	log.Trace().Msg("Starting daemon service")
 	_, err = jsonrpcdaemon.New(ctx,
 		jsonrpcdaemon.WithLogLevel(util.LogLevel("jsonrpc")),
 		jsonrpcdaemon.WithMonitor(monitor),
-		jsonrpcdaemon.WithENS(ens),
+		jsonrpcdaemon.WithClaimData(claimData),
 		jsonrpcdaemon.WithListenAddress(viper.GetString("jsonrpc.listen-address")),
 	)
 	if err != nil {
