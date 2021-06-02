@@ -148,3 +148,43 @@ func TestOwnerForDomain(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalizeDomain(t *testing.T) {
+	tests := []struct {
+		name       string
+		domain     string
+		normalized string
+	}{
+		{
+			name:       "Nil",
+			domain:     "",
+			normalized: "",
+		},
+		{
+			name:       "Root",
+			domain:     ".",
+			normalized: ".",
+		},
+		{
+			name:       "TLDLeading",
+			domain:     ".com",
+			normalized: "com",
+		},
+		{
+			name:       "TLDTrailing",
+			domain:     "com.",
+			normalized: "com",
+		},
+		{
+			name:       "TLDLeadingAndTrailing",
+			domain:     ".com.",
+			normalized: "com",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			res := normalizeDomain(test.domain)
+			require.Equal(t, test.normalized, res)
+		})
+	}
+}

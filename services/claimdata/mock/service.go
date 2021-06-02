@@ -23,14 +23,17 @@ import (
 // Service is a mock claim data service.
 type Service struct{}
 
-// New creates a new claim data service.
+// New creates a new mock claim data service.
 func New() *Service {
 	return &Service{}
 }
 
-// GetClaimData gets the claim data for a domain.
+// GetClaimData is a mock.
 func (s *Service) GetClaimData(ctx context.Context,
 	domain string,
 ) ([32]byte, string, common.Address, []byte, error) {
-	return [32]byte{}, "", common.Address{}, nil, errors.New("mock")
+	if domain == "" {
+		return [32]byte{}, "", common.Address{}, nil, errors.New("no domain supplied")
+	}
+	return [32]byte{}, "", common.Address{}, nil, nil
 }

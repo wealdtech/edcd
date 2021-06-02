@@ -17,6 +17,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 // GetClaimDataArgs are the arguments for the GetClaimData method.
@@ -34,8 +36,13 @@ type GetClaimDataResults struct {
 }
 
 func (s *Service) GetClaimData(r *http.Request, args *GetClaimDataArgs, results *GetClaimDataResults) error {
+	if args == nil {
+		return errors.New("no arguments supplied")
+	}
+
 	ctx := context.Background()
 	log.Trace().Str("domain", args.Domain).Msg("GetClaimData called")
+
 	node, label, newOwner, signature, err := s.claimData.GetClaimData(ctx, args.Domain)
 	if err != nil {
 		log.Trace().Err(err).Msg("GetClaimData failed")
