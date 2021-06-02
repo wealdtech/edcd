@@ -30,21 +30,4 @@ type Service interface {
 		[]byte,
 		error,
 	)
-
-	//// DomainOwner gets the owner for a domain.
-	//DomainOwner(ctx context.Context,
-	//domain string,
-	//)(
-	//
-	//)
-	//	// GetClaimData gets the claim data for a domain.
-	//	GetClaimData(ctx context.Context,
-	//		domain string,
-	//	) (
-	//		nameHash [32]byte,
-	//		label string,
-	//		owner common.Address,
-	//		signature []byte,
-	//		err error,
-	//	)
 }

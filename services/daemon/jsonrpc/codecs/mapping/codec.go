@@ -25,9 +25,9 @@ func (c *Codec) Add(from string, to string) {
 	c.methods[from] = to
 }
 
-// NewRequest returns a new CodecRequest of type MappingRequest.
+// NewRequest returns a new CodecRequest of type Request.
 func (c *Codec) NewRequest(r *http.Request) rpc.CodecRequest {
-	outerCR := &MappingRequest{
+	outerCR := &Request{
 		methods: c.methods,
 	}
 	jsonC := json.NewCodec()
@@ -37,13 +37,13 @@ func (c *Codec) NewRequest(r *http.Request) rpc.CodecRequest {
 	return outerCR
 }
 
-// MappingRequest decodes and encodes a single request. MappingCodecRequest
+// Request decodes and encodes a single request. MappingCodecRequest
 // implements gorilla/rpc.CodecRequest interface primarily by embedding
 // the CodecRequest from gorilla/rpc/json. By selectively adding
 // CodecRequest methods to TRCodecRequest, we can modify that behaviour
 // while maintaining all the other remaining CodecRequest methods from
 // gorilla's rpc/json implementation
-type MappingRequest struct {
+type Request struct {
 	*json.CodecRequest
 	methods map[string]string
 }
@@ -57,7 +57,7 @@ type MappingRequest struct {
 // Essentially, this just intercepts the return value from the embedded
 // gorilla/rpc/json.CodecRequest.Method(), checks/modifies it, and passes it
 // on to the calling rpc server.
-func (r *MappingRequest) Method() (string, error) {
+func (r *Request) Method() (string, error) {
 	m, err := r.CodecRequest.Method()
 	if err != nil {
 		return "", err

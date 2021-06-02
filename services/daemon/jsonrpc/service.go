@@ -83,7 +83,9 @@ func New(ctx context.Context, params ...Parameter) (*Service, error) {
 		for {
 			sig := <-sigCh
 			if sig == syscall.SIGINT || sig == syscall.SIGTERM || sig == os.Interrupt || sig == os.Kill {
-				s.srv.Shutdown(ctx)
+				if err := s.srv.Shutdown(ctx); err != nil {
+					log.Warn().Err(err).Msg("Failed to shutdown service")
+				}
 				break
 			}
 		}

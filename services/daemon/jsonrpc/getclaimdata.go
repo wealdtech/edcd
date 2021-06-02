@@ -26,15 +26,16 @@ type GetClaimDataArgs struct {
 	Domain string `json:"domain"`
 }
 
-// GetClaimDataArgs are the results for the GetClaimData method.
+// GetClaimDataResults are the results for the GetClaimData method.
 type GetClaimDataResults struct {
 	Message   string `json:"message,omitempty"`
 	Node      string `json:"node,omitempty"`
 	Label     string `json:"label,omitempty"`
 	NewOwner  string `json:"newowner,omitempty"`
-	Signature string `json:"siganture,omitempty"`
+	Signature string `json:"signature,omitempty"`
 }
 
+// GetClaimData handles the JSON-RPC call ens_getclaimdata.
 func (s *Service) GetClaimData(r *http.Request, args *GetClaimDataArgs, results *GetClaimDataResults) error {
 	if args == nil {
 		return errors.New("no arguments supplied")
